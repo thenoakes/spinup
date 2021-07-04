@@ -1,8 +1,9 @@
 import { Command, flags } from "@oclif/command";
 import { spawn } from "child_process";
 import { join } from "path";
-import { renameSync, mkdirSync } from "fs";
-import { dirSync, setGracefulCleanup } from "tmp";
+import { rename, mkdir } from "fs";
+import { dir, setGracefulCleanup } from "tmp";
+import { promisify } from "util";
 
 class Spinup extends Command {
   static description = "describe the command here";
@@ -44,71 +45,79 @@ class Spinup extends Command {
      */
     let activeDir = "";
 
-    const bootstrap = (command: string, runFromCurrent: boolean) => {
-      spawn("sh", ["-c", command], {
-        stdio: "inherit",
-        cwd: activeDir,
-      }).on("close", (_code, _signal) =>
-        // Move (and potentially rename) the directory to the working directory
-        renameSync(
-          runFromCurrent ? join(activeDir, args.name) : activeDir,
-          join(process.cwd(), flags["dir-name"] ?? args.name)
-        )
-      );
-    };
+    const bootstrap = (command: string, runFromCurrent: boolean) =>
+      new Promise<void>((resolve, reject) => {
+        // Run a command to bootstrap the project in a temp directory
+        // If `runFromCurrent` is true, the command is expected to create the project directory itself
+        // If false, the command is expected to be run in a newly-created project directory
+        spawn("sh", ["-c", command], {
+          stdio: "inherit",
+          cwd: activeDir,
+        }).on("close", (_code, _signal) => {
+          // Move (and potentially rename) the new project back to the working directory
+          rename(
+            runFromCurrent ? join(activeDir, args.name) : activeDir,
+            join(process.cwd(), flags["dir-name"] ?? args.name),
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+      });
 
     switch (args.type) {
       case "node":
-        activeDir = makeTempDir(args.name);
-        bootstrap("npm init esm -y", false);
+        activeDir = await makeTempDir(args.name);
+        await bootstrap("npm init esm -y", false);
         break;
 
       case "go":
-        activeDir = makeTempDir(args.name);
-        bootstrap(`go mod init github.com/thenoakes/${args.name}`, false);
+        activeDir = await makeTempDir(args.name);
+        await bootstrap(`go mod init github.com/thenoakes/${args.name}`, false);
         break;
 
       case "swift":
-        activeDir = makeTempDir(args.name);
-        bootstrap(
+        activeDir = await makeTempDir(args.name);
+        await bootstrap(
           `swift package init --type executable --name ${args.name}`,
           false
         );
         break;
 
       case "dart":
-        activeDir = makeTempDir();
-        bootstrap(`dart create -t console-full ${args.name}`, true);
+        activeDir = await makeTempDir();
+        await bootstrap(`dart create -t console-full ${args.name}`, true);
         break;
-      
+
       case "dotnet":
-        activeDir = makeTempDir();
-        bootstrap(`dotnet new console --name ${args.name}`, true);
+        activeDir = await makeTempDir();
+        await bootstrap(`dotnet new console --name ${args.name}`, true);
         break;
-      
+
       case "ts":
-        activeDir = makeTempDir();
-        bootstrap(`printf "\\n" | npx tsdx create ${args.name}`, true);
+        activeDir = await makeTempDir();
+        await bootstrap(`printf "\\n" | npx tsdx create ${args.name}`, true);
         break;
-      
+
       default:
         break;
     }
   }
 }
 
-const makeTempDir = (subDir?: string) => {
+const makeTempDir = async (subDir?: string) => {
   // Use tmp to create a unique temporary path
   setGracefulCleanup();
-  const tempDir = dirSync();
+  const tempDir = await promisify(dir)();
 
   // Create the project directory
   if (subDir) {
-    const newProjDir = join(tempDir.name, subDir);
-    mkdirSync(newProjDir);
+    const newProjDir = join(tempDir, subDir);
+    await promisify(mkdir)(newProjDir);
     return newProjDir;
   } else {
-    return tempDir.name;
+    return tempDir;
   }
 };
 
