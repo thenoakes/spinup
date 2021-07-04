@@ -38,97 +38,59 @@ class Spinup extends Command {
       } in directory ${flags["dir-name"] ?? args.name}`
     );
 
-    let projectDir = "";
+    /**
+     * The directory to run the boostrap command from; this will either be the working directory
+     * or a pre-created directory one level down
+     */
+    let activeDir = "";
+
+    const bootstrap = (command: string, runFromCurrent: boolean) => {
+      spawn("sh", ["-c", command], {
+        stdio: "inherit",
+        cwd: activeDir,
+      }).on("close", (_code, _signal) =>
+        // Move (and potentially rename) the directory to the working directory
+        renameSync(
+          runFromCurrent ? join(activeDir, args.name) : activeDir,
+          join(process.cwd(), flags["dir-name"] ?? args.name)
+        )
+      );
+    };
 
     switch (args.type) {
       case "node":
-        projectDir = makeTempDir(args.name);
-
-        // In the project directory, call `npm init`
-        spawn("sh", ["-c", "npm init esm -y"], {
-          stdio: "inherit",
-          cwd: projectDir,
-        }).on("close", (_code, _signal) =>
-          // Move (and potentially rename) the directory to the working directory
-          renameSync(
-            projectDir,
-            join(process.cwd(), flags["dir-name"] ?? args.name)
-          )
-        );
+        activeDir = makeTempDir(args.name);
+        bootstrap("npm init esm -y", false);
         break;
+
       case "go":
-        projectDir = makeTempDir(args.name);
-
-        spawn("sh", ["-c", `go mod init github.com/thenoakes/${args.name}`], {
-          stdio: "inherit",
-          cwd: projectDir,
-        }).on("close", (_code, _signal) =>
-          // Move (and potentially rename) the directory to the working directory
-          renameSync(
-            projectDir,
-            join(process.cwd(), flags["dir-name"] ?? args.name)
-          )
-        );
+        activeDir = makeTempDir(args.name);
+        bootstrap(`go mod init github.com/thenoakes/${args.name}`, false);
         break;
+
       case "swift":
-        projectDir = makeTempDir(args.name);
-
-        spawn(
-          "sh",
-          ["-c", `swift package init --type executable --name ${args.name}`],
-          {
-            stdio: "inherit",
-            cwd: projectDir,
-          }
-        ).on("close", (_code, _signal) =>
-          // Move (and potentially rename) the directory to the working directory
-          renameSync(
-            projectDir,
-            join(process.cwd(), flags["dir-name"] ?? args.name)
-          )
+        activeDir = makeTempDir(args.name);
+        bootstrap(
+          `swift package init --type executable --name ${args.name}`,
+          false
         );
         break;
+
       case "dart":
-        projectDir = makeTempDir();
-
-        spawn("sh", ["-c", `dart create -t console-full ${args.name}`], {
-          stdio: "inherit",
-          cwd: projectDir,
-        }).on("close", (_code, _signal) =>
-          // Move (and potentially rename) the directory to the working directory
-          renameSync(
-            join(projectDir, args.name),
-            join(process.cwd(), flags["dir-name"] ?? args.name)
-          )
-        );
+        activeDir = makeTempDir();
+        bootstrap(`dart create -t console-full ${args.name}`, true);
         break;
+      
       case "dotnet":
-        projectDir = makeTempDir();
-
-        spawn("sh", ["-c", `dotnet new console --name ${args.name}`], {
-          stdio: "inherit",
-          cwd: projectDir,
-        }).on("close", (_code, _signal) =>
-          // Move (and potentially rename) the directory to the working directory
-          renameSync(
-            join(projectDir, args.name),
-            join(process.cwd(), flags["dir-name"] ?? args.name)
-          )
-        );
-      case "ts":
-        projectDir = makeTempDir();
-
-        spawn("sh", ["-c", `printf "\\n" | npx tsdx create ${args.name}`], {
-          stdio: "inherit",
-          cwd: projectDir,
-        }).on("close", (_code, _signal) =>
-          // Move (and potentially rename) the directory to the working directory
-          renameSync(
-            join(projectDir, args.name),
-            join(process.cwd(), flags["dir-name"] ?? args.name)
-          )
-        );
+        activeDir = makeTempDir();
+        bootstrap(`dotnet new console --name ${args.name}`, true);
         break;
+      
+      case "ts":
+        activeDir = makeTempDir();
+        bootstrap(`printf "\\n" | npx tsdx create ${args.name}`, true);
+        break;
+      
       default:
         break;
     }
