@@ -39,13 +39,13 @@ class Spinup extends Command {
     );
 
     let projectDir = "";
-    
+
     switch (args.type) {
       case "node":
         projectDir = makeTempDir(args.name);
 
         // In the project directory, call `npm init`
-        spawn("npm", ["init", "esm", "-y"], {
+        spawn("sh", ["-c", "npm init esm -y"], {
           stdio: "inherit",
           cwd: projectDir,
         }).on("close", (_code, _signal) =>
@@ -59,7 +59,7 @@ class Spinup extends Command {
       case "go":
         projectDir = makeTempDir(args.name);
 
-        spawn("go", ["mod", "init", `github.com/thenoakes/${args.name}`], {
+        spawn("sh", ["-c", `go mod init github.com/thenoakes/${args.name}`], {
           stdio: "inherit",
           cwd: projectDir,
         }).on("close", (_code, _signal) =>
@@ -74,8 +74,8 @@ class Spinup extends Command {
         projectDir = makeTempDir(args.name);
 
         spawn(
-          "swift",
-          ["package", "init", "--type", "executable", "--name", args.name],
+          "sh",
+          ["-c", `swift package init --type executable --name ${args.name}`],
           {
             stdio: "inherit",
             cwd: projectDir,
@@ -91,7 +91,7 @@ class Spinup extends Command {
       case "dart":
         projectDir = makeTempDir();
 
-        spawn("dart", ["create", "-t", "console-full", args.name], {
+        spawn("sh", ["-c", `dart create -t console-full ${args.name}`], {
           stdio: "inherit",
           cwd: projectDir,
         }).on("close", (_code, _signal) =>
@@ -105,7 +105,7 @@ class Spinup extends Command {
       case "dotnet":
         projectDir = makeTempDir();
 
-        spawn("dotnet", ["new", "console", "--name", args.name], {
+        spawn("sh", ["-c", `dotnet new console --name ${args.name}`], {
           stdio: "inherit",
           cwd: projectDir,
         }).on("close", (_code, _signal) =>
