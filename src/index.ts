@@ -39,6 +39,7 @@ class Spinup extends Command {
     );
 
     let projectDir = "";
+    
     switch (args.type) {
       case "node":
         projectDir = makeTempDir(args.name);
@@ -114,20 +115,20 @@ class Spinup extends Command {
             join(process.cwd(), flags["dir-name"] ?? args.name)
           )
         );
-      // case "ts":
-      //   projectDir = makeTempDir();
+      case "ts":
+        projectDir = makeTempDir();
 
-      //   spawn("npx", ["tsdx", "create", args.name], {
-      //     stdio: "inherit",
-      //     cwd: projectDir,
-      //   }).on("close", (_code, _signal) =>
-      //     // Move (and potentially rename) the directory to the working directory
-      //     renameSync(
-      //       join(projectDir, args.name),
-      //       join(process.cwd(), flags["dir-name"] ?? args.name)
-      //     )
-      //   );
-      //   break;
+        spawn("sh", ["-c", `printf "\\n" | npx tsdx create ${args.name}`], {
+          stdio: "inherit",
+          cwd: projectDir,
+        }).on("close", (_code, _signal) =>
+          // Move (and potentially rename) the directory to the working directory
+          renameSync(
+            join(projectDir, args.name),
+            join(process.cwd(), flags["dir-name"] ?? args.name)
+          )
+        );
+        break;
       default:
         break;
     }
