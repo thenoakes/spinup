@@ -1,6 +1,6 @@
 {
   "name": "spinup",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "author": "Matt Noakes @thenoakes",
   "bin": {
     "spinup": "./bin/run"
@@ -10,6 +10,8 @@
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
+    "@types/chalk": "^2.2.0",
+    "chalk": "^4.1.1",
     "tmp": "^0.2.1",
     "tslib": "^1.14.1"
   },
@@ -55,7 +57,7 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "build": "rm -rf lib; tsc -b",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "pack": "oclif-dev pack:macos"
+    "pack": "npm run build && oclif-dev pack:macos"
   },
   "types": "lib/index.d.ts"
 }

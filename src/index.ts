@@ -4,6 +4,7 @@ import { join } from "path";
 import { rename, mkdir } from "fs";
 import { dir, setGracefulCleanup } from "tmp";
 import { promisify } from "util";
+import * as chalk from 'chalk'
 
 class Spinup extends Command {
   static description = "describe the command here";
@@ -33,12 +34,6 @@ class Spinup extends Command {
   async run() {
     const { args, flags } = this.parse(Spinup);
 
-    this.log(
-      `You want to create a ${args.type} project named ${
-        args.name
-      } in directory ${flags["dir-name"] ?? args.name}`
-    );
-
     /**
      * The directory to run the boostrap command from; this will either be the working directory
      * or a pre-created directory one level down
@@ -50,19 +45,26 @@ class Spinup extends Command {
         // Run a command to bootstrap the project in a temp directory
         // If `runFromCurrent` is true, the command is expected to create the project directory itself
         // If false, the command is expected to be run in a newly-created project directory
+        this.log(chalk.blue(command));
         spawn("sh", ["-c", command], {
           stdio: "inherit",
           cwd: activeDir,
         }).on("close", (_code, _signal) => {
           // Move (and potentially rename) the new project back to the working directory
-          rename(
-            runFromCurrent ? join(activeDir, args.name) : activeDir,
-            join(process.cwd(), flags["dir-name"] ?? args.name),
-            (err) => {
-              if (err) reject(err);
-              else resolve();
+          const source = runFromCurrent
+            ? join(activeDir, args.name)
+            : activeDir;
+          const target = join(process.cwd(), flags["dir-name"] ?? args.name);
+          // this.log(`mv ${source} ${target}`);
+          rename(source, target, (err) => {
+            if (err) {
+              this.log(chalk.redBright('Something went wrong.'));
+              reject(err);
+            } else {
+              this.log(chalk.greenBright('Project created.'));
+              resolve();
             }
-          );
+          });
         });
       });
 
