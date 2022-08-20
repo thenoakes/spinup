@@ -1,3 +1,7 @@
+# spinup
+
+A cli for creating basic projects, written with oclif
+
 ```
 ./bin/run
 ```
@@ -26,4 +30,4 @@ sudo installer -pkg dist/macos/spinup-v0.0.0.pkg -target /
 
 Install to `/usr/local/bin`
 
-
+Alternatively, `npm link` to add the `spinup` command to PATH.
