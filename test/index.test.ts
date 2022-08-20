@@ -1,6 +1,6 @@
 import { expect, test } from "@oclif/test";
 
-import cmd = require("../src");
+import cmd from "../src";
 
 describe("spinup", () => {
   test

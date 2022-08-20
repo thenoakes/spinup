@@ -9,7 +9,7 @@ import * as chalk from 'chalk'
 class Spinup extends Command {
   static description = "describe the command here";
 
-  static flags = {
+  static flags: flags.Input<{ help: void;  "dir-name"?: string }> = {
     help: flags.help({ char: "h" }),
     "dir-name": flags.string({
       description:
@@ -123,4 +123,4 @@ const makeTempDir = async (subDir?: string) => {
   }
 };
 
-export = Spinup;
+export default Spinup;
