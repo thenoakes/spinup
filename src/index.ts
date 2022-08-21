@@ -4,7 +4,7 @@ import { join } from "path";
 import { rename, mkdir } from "fs";
 import { dir, setGracefulCleanup } from "tmp";
 import { promisify } from "util";
-import * as chalk from 'chalk'
+import chalk from 'chalk';
 
 class Spinup extends Command {
   static description = "describe the command here";

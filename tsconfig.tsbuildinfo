@@ -307,7 +307,7 @@
         "affectsGlobalScope": false
       },
       "./src/index.ts": {
-        "version": "58d0bbdd41ce57d4e3df1dc53007247e9363d85fd68f9939fb1b919c8c477066",
+        "version": "2b6d30690ecf992ffe234cea4f2649a210697ce8e07ffb926658402c91f44bc2",
         "signature": "84ea87674709c6634047b5d3369d7636bb44d45f6860436c2e208e9ce4d87d37",
         "affectsGlobalScope": false
       },
@@ -641,6 +641,7 @@
       "strict": true,
       "target": 4,
       "composite": true,
+      "esModuleInterop": true,
       "configFilePath": "./tsconfig.json"
     },
     "referencedMap": {
