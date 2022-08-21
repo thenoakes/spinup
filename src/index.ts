@@ -1,7 +1,7 @@
 import { Command, flags } from "@oclif/command";
 import { spawn } from "child_process";
 import { join } from "path";
-import { rename, mkdir } from "fs";
+import { rename, mkdir, copyFile } from "fs";
 import { dir, setGracefulCleanup } from "tmp";
 import { promisify } from "util";
 import chalk from 'chalk';
@@ -22,7 +22,7 @@ class Spinup extends Command {
       name: "type",
       required: true,
       description: "The type of project to create",
-      options: ["node", "ts", "swift", "dart", "go", "dotnet"],
+      options: ["node", "ts", "swift", "dart", "go", "dotnet", "oclif"],
     },
     {
       name: "name",
@@ -100,6 +100,13 @@ class Spinup extends Command {
       case "ts":
         activeDir = await makeTempDir();
         await bootstrap(`printf "\\n" | npx tsdx create ${args.name}`, true);
+        break;
+
+      case "oclif":
+        activeDir = await makeTempDir();
+        const OCLIF_EXPECT = 'oclif-generate.exp';
+        await promisify(copyFile)(join(__dirname, OCLIF_EXPECT), join(activeDir, OCLIF_EXPECT));
+        await bootstrap(`./${OCLIF_EXPECT} ${args.name}`, true);
         break;
 
       default:
