@@ -9,7 +9,7 @@ import chalk from 'chalk';
 class Spinup extends Command {
   static description = "describe the command here";
 
-  static flags: flags.Input<{ help: void;  "dir-name"?: string }> = {
+  static flags: flags.Input<{ help: void; "dir-name"?: string }> = {
     help: flags.help({ char: "h" }),
     "dir-name": flags.string({
       description:
