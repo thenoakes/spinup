@@ -123,4 +123,4 @@ const makeTempDir = async (subDir?: string) => {
   }
 };
 
-export default Spinup;
+export = Spinup;
