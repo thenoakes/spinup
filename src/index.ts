@@ -9,12 +9,13 @@ import chalk from 'chalk';
 class Spinup extends Command {
   static description = "describe the command here";
 
-  static flags: flags.Input<{ help: void; "dir-name"?: string }> = {
+  static flags: flags.Input<{ help: void; "dir-name"?: string; version: void; }> = {
     help: flags.help({ char: "h" }),
     "dir-name": flags.string({
       description:
         "Specify the directory name if it should be different to the project name",
     }),
+    version: flags.version(),
   };
 
   static args = [
