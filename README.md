@@ -31,3 +31,10 @@ sudo installer -pkg dist/macos/spinup-v0.0.0.pkg -target /
 Install to `/usr/local/bin`
 
 Alternatively, `npm link` to add the `spinup` command to PATH.
+
+
+----
+
+Updated to new oclif version 
+
+`npm exec oclif pack macos` will build pkg installers for x64 and arm64 (needs `asdf local nodejs 16.16.0` to compile for ARM)
