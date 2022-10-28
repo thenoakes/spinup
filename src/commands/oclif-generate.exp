@@ -12,7 +12,7 @@ if {$force_conservative} {
 set name [lindex $argv 0];
 
 set timeout -1
-spawn npx oclif generate $name
+spawn npx oclif@^3 generate $name
 match_max 100000
 
 expect "npm package name"
