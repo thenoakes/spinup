@@ -1,21 +1,21 @@
-import { Command, flags } from "@oclif/command";
-import { spawn } from "child_process";
-import { join } from "path";
-import { rename, mkdir, copyFile } from "fs";
+import { Command, Flags } from "@oclif/core";
+import { spawn } from "node:child_process";
+import { join } from "node:path";
+import { copyFile, mkdir, rename } from "node:fs";
 import { dir, setGracefulCleanup } from "tmp";
-import { promisify } from "util";
-import chalk from 'chalk';
+import { promisify } from "node:util";
+import chalk from "chalk";
 
 class Spinup extends Command {
   static description = "describe the command here";
 
-  static flags: flags.Input<{ help: void; "dir-name"?: string; version: void; }> = {
-    help: flags.help({ char: "h" }),
-    "dir-name": flags.string({
+  static flags = {
+    help: Flags.help(),
+    version: Flags.version(),
+    "dir-name": Flags.string({
       description:
         "Specify the directory name if it should be different to the project name",
     }),
-    version: flags.version(),
   };
 
   static args = [
@@ -33,7 +33,7 @@ class Spinup extends Command {
   ];
 
   async run() {
-    const { args, flags } = this.parse(Spinup);
+    const { args, flags } = await this.parse(Spinup);
 
     /**
      * The directory to run the boostrap command from; this will either be the working directory
@@ -59,10 +59,10 @@ class Spinup extends Command {
           // this.log(`mv ${source} ${target}`);
           rename(source, target, (err) => {
             if (err) {
-              this.log(chalk.redBright('Something went wrong.'));
+              this.log(chalk.redBright("Something went wrong."));
               reject(err);
             } else {
-              this.log(chalk.greenBright('Project created.'));
+              this.log(chalk.greenBright("Project created."));
               resolve();
             }
           });
@@ -104,10 +104,16 @@ class Spinup extends Command {
         break;
 
       case "oclif":
-        activeDir = await makeTempDir();
-        const OCLIF_EXPECT = 'oclif-generate.exp';
-        await promisify(copyFile)(join(__dirname, OCLIF_EXPECT), join(activeDir, OCLIF_EXPECT));
-        await bootstrap(`./${OCLIF_EXPECT} ${args.name}`, true);
+        {
+          activeDir = await makeTempDir();
+          const OCLIF_EXPECT = "oclif-generate.exp";
+          await promisify(copyFile)(
+            join(__dirname, OCLIF_EXPECT),
+            join(activeDir, OCLIF_EXPECT)
+          );
+          await bootstrap(`./${OCLIF_EXPECT} ${args.name}`, true);
+        }
+
         break;
 
       default:
@@ -126,9 +132,9 @@ const makeTempDir = async (subDir?: string) => {
     const newProjDir = join(tempDir, subDir);
     await promisify(mkdir)(newProjDir);
     return newProjDir;
-  } else {
-    return tempDir;
   }
+
+  return tempDir;
 };
 
 export = Spinup;
